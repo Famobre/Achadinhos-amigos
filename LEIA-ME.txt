@@ -1,0 +1,37 @@
+ACHADINHOS — bot de ofertas com link de afiliado
+================================================
+
+O bot acha ofertas boas e posta no SEU canal com o SEU link de afiliado.
+Quem compra pelo link gera comissão pra você. Tudo fica no seu PC.
+
+1) INSTALAR
+   - Extraia o zip numa pasta (ex.: Documentos\Achadinhos).
+   - Dois cliques no Iniciar.bat. Na primeira vez ele instala o Python
+     sozinho (uns 2 minutos). Depois o painel abre.
+
+2) O MÍNIMO PRA COMEÇAR (Shopee + Telegram)
+   a) Afiliado Shopee: affiliate.shopee.com.br → cadastre-se.
+      Pegue seu ID de afiliado e o link do feed de produtos.
+   b) Canal no Telegram: crie um canal público.
+   c) Bot do Telegram: fale com o @BotFather → /newbot → copie o token.
+      Coloque esse bot como ADMIN do seu canal.
+   d) No painel, aba CONTAS: cole o ID de afiliado, o link do feed,
+      o token do bot e o @ do seu canal. Salvar.
+   e) Aba PAINEL → botão de ligar. Pronto, ele começa a postar.
+   O quadro "Primeiros passos" no Painel mostra o que ainda falta.
+
+3) OPCIONAL
+   - Mercado Livre, AliExpress, Amazon: cadastro de afiliado em cada um
+     e as chaves na aba Contas (o passo a passo de cada um aparece lá).
+   - IA (textos melhores): chave da Anthropic em console.anthropic.com.
+     Sem chave o bot usa textos prontos.
+   - Outros canais (Discord, Instagram via Postiz, Webhook): aba CANAIS.
+   - Aba CONFIG: palavras que o bot procura, horário, ritmo, rodapé dos
+     posts e o link do seu canal do WhatsApp.
+
+4) IMPORTANTE
+   - O bot só posta com o painel aberto (pode minimizar). Pra rodar 24h
+     sem o PC ligado, use o GerarSquare.bat e suba na Square Cloud.
+   - Suas chaves ficam só no seu PC (segredos.json). Não mande esse
+     arquivo nem o .env pra ninguém.
+   - Não poste demais no começo: Telegram e lojas podem bloquear spam.

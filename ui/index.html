@@ -1,0 +1,929 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Achadinhos • Launcher</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070203; --panel:rgba(20,6,8,.62); --panel-2:rgba(32,9,12,.7);
+  --line:rgba(255,40,60,.14); --line-2:rgba(255,40,60,.28);
+  --red:#ff1f3d; --red-2:#e00028; --red-deep:#7a0014;
+  --txt:#f3e9ea; --muted:#9a7f83; --dim:#5e474a;
+  --ok:#2ee58a; --warn:#ffb020; --shopee:#ff6a2b; --ml:#ffe14d; --ali:#ff4d6d; --amz:#4dc3ff;
+  --display:"Rajdhani","Segoe UI",sans-serif; --ui:"Inter","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--txt);font:13px/1.45 var(--ui);overflow:hidden;user-select:none}
+#fx{position:fixed;inset:0;z-index:0}
+.app{position:relative;z-index:1;height:100%;display:grid;grid-template-rows:44px 1fr}
+
+/* ---------- barra de título ---------- */
+.titlebar{display:flex;align-items:center;gap:12px;padding:0 10px 0 16px;border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(10,2,4,.85),rgba(10,2,4,.55));backdrop-filter:blur(6px)}
+.logo{font:700 20px/1 var(--display);letter-spacing:.14em;font-style:italic;display:flex;align-items:center;gap:2px}
+.logo b{color:var(--red);text-shadow:0 0 14px rgba(255,31,61,.8)}
+.logo small{font:600 10px var(--ui);letter-spacing:.2em;color:var(--dim);margin-left:10px;font-style:normal}
+.drag{flex:1;align-self:stretch}
+.wbtn{width:30px;height:28px;border-radius:7px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--muted);
+  display:grid;place-items:center;cursor:pointer;transition:.15s}
+.wbtn:hover{color:var(--txt);border-color:var(--line-2);background:rgba(255,31,61,.08)}
+.wbtn.x:hover{background:var(--red-2);color:#fff;border-color:var(--red-2)}
+
+/* ---------- layout ---------- */
+.body{display:grid;grid-template-columns:200px 1fr;min-height:0}
+nav{padding:18px 12px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:4px;background:rgba(8,2,3,.4)}
+nav button{all:unset;white-space:nowrap;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;color:var(--muted);cursor:pointer;
+  font:600 14px var(--display);letter-spacing:.08em;text-transform:uppercase;transition:.15s;border:1px solid transparent}
+nav button svg{width:16px;height:16px}
+nav button:hover{color:var(--txt);background:rgba(255,31,61,.05)}
+nav button.on{color:#fff;background:linear-gradient(90deg,rgba(255,31,61,.22),rgba(255,31,61,.04));border-color:var(--line-2);
+  box-shadow:inset 3px 0 0 var(--red)}
+.navfoot{margin-top:auto;padding:12px;border-radius:10px;border:1px solid var(--line);background:var(--panel);font-size:11px;color:var(--muted)}
+.navfoot .row{display:flex;justify-content:space-between;padding:3px 0}
+main{overflow:auto;padding:22px 26px 26px;min-height:0}
+main::-webkit-scrollbar{width:8px} main::-webkit-scrollbar-thumb{background:var(--red-deep);border-radius:8px}
+.view{display:none;animation:in .25s ease} .view.on{display:block}
+@keyframes in{from{opacity:0;transform:translateY(6px)}}
+h2{font:700 24px var(--display);letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px}
+.sub{color:var(--muted);margin-bottom:18px}
+
+/* ---------- cards ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;backdrop-filter:blur(10px)}
+.card h3{font:600 12px var(--display);letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(4,1fr)}
+.kpi .v{font:700 28px/1.1 var(--display);letter-spacing:.02em}
+.kpi .l{color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.kpi .s{color:var(--dim);font-size:11px;margin-top:6px}
+.kpi.main{background:linear-gradient(135deg,rgba(255,31,61,.28),rgba(60,0,10,.55));border-color:var(--line-2)}
+.kpi.main .v{text-shadow:0 0 22px rgba(255,31,61,.55)}
+
+/* ---------- hero (power) ---------- */
+.hero{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:22px;margin-bottom:14px;padding:20px 22px}
+.power{width:84px;height:84px;border-radius:50%;border:2px solid var(--line-2);background:radial-gradient(circle,rgba(255,31,61,.12),transparent 70%);
+  display:grid;place-items:center;cursor:pointer;color:var(--muted);transition:.25s;position:relative}
+.power svg{width:34px;height:34px}
+.power:hover{color:var(--txt);border-color:var(--red)}
+.power.on{color:#fff;border-color:var(--red);background:radial-gradient(circle,var(--red-2),#5a0010);box-shadow:0 0 0 6px rgba(255,31,61,.12),0 0 40px rgba(255,31,61,.55)}
+.power.on::after{content:"";position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(255,31,61,.5);animation:pulse 2s infinite}
+@keyframes pulse{to{inset:-22px;opacity:0}}
+.status-t{font:700 22px var(--display);letter-spacing:.08em;text-transform:uppercase}
+.status-t .dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--dim);margin-right:8px;vertical-align:middle}
+.status-t.on .dot{background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.status-s{color:var(--muted);margin-top:2px}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.badge{font-size:11px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:rgba(0,0,0,.25)}
+.badge.ok{color:var(--ok);border-color:rgba(46,229,138,.3)} .badge.no{color:var(--warn);border-color:rgba(255,176,32,.3)}
+
+/* ---------- botões ---------- */
+.btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;height:38px;padding:0 18px;border-radius:9px;
+  font:700 13px var(--display);letter-spacing:.14em;text-transform:uppercase;transition:.15s;white-space:nowrap}
+.btn.red{background:linear-gradient(180deg,var(--red),var(--red-2));color:#fff;box-shadow:0 6px 22px rgba(255,31,61,.35)}
+.btn.red:hover{filter:brightness(1.12);box-shadow:0 6px 28px rgba(255,31,61,.55)}
+.btn.ghost{border:1px solid var(--line-2);color:#ff6b80;background:rgba(255,31,61,.05)}
+.btn.ghost:hover{background:rgba(255,31,61,.12);color:#fff}
+.btn:disabled,.btn.busy{opacity:.5;pointer-events:none}
+.actions{display:flex;gap:10px}
+
+/* ---------- gráfico ---------- */
+.row2{grid-template-columns:1.5fr 1fr;margin-top:14px}
+.chart{height:170px;display:flex;align-items:flex-end;gap:6px;padding-top:10px}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%;position:relative}
+.bar .stk{width:100%;max-width:26px;display:flex;flex-direction:column-reverse;border-radius:5px 5px 2px 2px;overflow:hidden;min-height:2px;background:rgba(255,255,255,.04)}
+.bar .stk i{display:block} .bar .d{font-size:9px;color:var(--dim)}
+.bar:hover .tip{opacity:1}
+.tip{position:absolute;bottom:calc(100% - 10px);background:#1a0609;border:1px solid var(--line-2);padding:4px 7px;border-radius:6px;font-size:11px;white-space:nowrap;opacity:0;pointer-events:none;transition:.15s;z-index:3}
+.legend{display:flex;gap:12px;font-size:11px;color:var(--muted)} .legend span::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px;background:var(--c)}
+.split{display:flex;flex-direction:column;gap:14px}
+.meter .top{display:flex;justify-content:space-between;margin-bottom:6px}
+.meter .track{height:8px;border-radius:8px;background:rgba(255,255,255,.05);overflow:hidden}
+.meter .fill{height:100%;border-radius:8px;transition:width .5s}
+
+/* ---------- listas ---------- */
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;padding:9px 4px;border-bottom:1px solid rgba(255,40,60,.07)}
+.item:last-child{border:0}
+.item img,.item .ph{width:40px;height:40px;border-radius:8px;object-fit:cover;background:#1a0709;border:1px solid var(--line)}
+.item .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .m{font-size:11px;color:var(--dim)}
+.tag{font-size:10px;font-weight:600;padding:2px 7px;border-radius:5px;letter-spacing:.04em}
+.tag.shopee{color:var(--shopee);background:rgba(255,106,43,.1)} .tag.mercadolivre{color:var(--ml);background:rgba(255,225,77,.08)}
+.tag.aliexpress{color:var(--ali);background:rgba(255,77,109,.1)} .tag.amazon{color:var(--amz);background:rgba(77,195,255,.1)}
+.money{font:700 15px var(--display);color:var(--ok)}
+.empty{color:var(--dim);text-align:center;padding:26px 0}
+.logs{font:12px/1.6 Consolas,"Cascadia Mono",monospace;max-height:calc(100vh - 210px);overflow:auto}
+.logs div{padding:2px 0;border-bottom:1px dashed rgba(255,40,60,.06)} .logs .t{color:var(--dim);margin-right:10px}
+.logs .erro{color:#ff6b80} .logs .aviso{color:var(--warn)}
+.mini-log{max-height:150px}
+
+/* ---------- formulários ---------- */
+.form{display:grid;grid-template-columns:150px 120px 1fr 150px auto;gap:10px;align-items:end}
+label{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+input,select,textarea{all:unset;box-sizing:border-box;display:block;width:100%;min-width:0;height:38px;padding:0 12px;border-radius:9px;border:1px solid var(--line-2);background:rgba(10,2,4,.6);
+  color:var(--txt);font:13px var(--ui);text-transform:none;letter-spacing:0;user-select:text}
+textarea{height:auto;min-height:120px;padding:10px 12px;line-height:1.5;white-space:pre-wrap}
+input:focus,select:focus,textarea:focus{border-color:var(--red)}
+select{line-height:36px;cursor:pointer}
+select option{background:#140507}
+.cfg{grid-template-columns:repeat(3,1fr)}
+.switch{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:10px;border:1px solid var(--line);background:rgba(10,2,4,.4);cursor:pointer}
+.switch .k{width:38px;height:22px;border-radius:22px;background:#2a0c10;position:relative;transition:.2s}
+.switch .k::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#7c5a5f;transition:.2s}
+.switch.on .k{background:var(--red-2);box-shadow:0 0 12px rgba(255,31,61,.5)} .switch.on .k::after{left:19px;background:#fff}
+.del{all:unset;cursor:pointer;color:var(--dim);padding:4px} .del:hover{color:var(--red)}
+
+/* ---------- loja da mãe ---------- */
+.pill{margin-left:auto;font:700 11px var(--ui);background:var(--red);color:#fff;border-radius:999px;padding:1px 7px;letter-spacing:0}
+.tabs{display:flex;gap:6px;margin-bottom:14px}
+.tabs button{all:unset;cursor:pointer;padding:8px 14px;border-radius:8px;border:1px solid var(--line);color:var(--muted);font:600 13px var(--display);letter-spacing:.12em;text-transform:uppercase}
+.tabs button.on{color:#fff;border-color:var(--line-2);background:rgba(255,31,61,.12)}
+.sub-v{display:none}.sub-v.on{display:block}
+.next{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;padding:22px;border-color:var(--line-2);
+  background:linear-gradient(135deg,rgba(255,31,61,.18),rgba(40,0,8,.5))}
+.next.due{animation:due 1.4s infinite}
+@keyframes due{50%{box-shadow:0 0 0 3px rgba(255,31,61,.35),0 0 40px rgba(255,31,61,.35)}}
+.next .big{font:700 26px var(--display);letter-spacing:.04em}
+.next .cd{font:700 40px/1 var(--display);color:#fff;text-shadow:0 0 18px rgba(255,31,61,.6);text-align:right}
+.next .cd small{display:block;font:500 11px var(--ui);color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:4px}
+.steps{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.thumbs div{position:relative}
+.thumbs img{width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--line-2);display:block}
+.thumbs button{all:unset;cursor:pointer;position:absolute;top:-6px;right:-6px;width:18px;height:18px;border-radius:50%;background:var(--red-2);color:#fff;font-size:11px;display:grid;place-items:center}
+.chk{display:flex;flex-direction:row;text-transform:none;letter-spacing:0;font-size:13px;color:var(--txt);align-items:center;gap:10px;padding:9px 12px;border-radius:9px;border:1px solid var(--line);cursor:pointer;margin-bottom:6px;background:rgba(10,2,4,.35)}
+.chk input{all:revert;accent-color:var(--red);width:16px;height:16px}
+.chk.off{opacity:.45}
+.chk .m{margin-left:auto;font-size:11px;color:var(--dim)}
+.two{display:grid;grid-template-columns:1.3fr 1fr;gap:14px}
+.ad{display:grid;grid-template-columns:56px 1fr auto;gap:12px;align-items:center;padding:10px 4px;border-bottom:1px solid rgba(255,40,60,.07)}
+.ad img,.ad .ph{width:56px;height:56px;border-radius:8px;object-fit:cover;background:#1a0709;border:1px solid var(--line)}
+.ad .t{font-weight:600}.ad .d{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---------- checklist ---------- */
+.check{margin-bottom:14px}
+.check .ck-track{height:6px;border-radius:6px;background:rgba(255,255,255,.06);overflow:hidden;margin:4px 0 12px}
+.check .ck-track i{display:block;height:100%;background:linear-gradient(90deg,var(--red-2),var(--red));transition:width .4s}
+.steps2{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.st{padding:10px;border-radius:10px;border:1px solid var(--line);background:rgba(10,2,4,.4);cursor:pointer;transition:.15s}
+.st:hover{border-color:var(--line-2)}
+.st .i{font:700 16px var(--display);color:var(--dim)} .st.ok .i{color:var(--ok)}
+.st .t{font-weight:600;font-size:12px;margin-top:2px} .st .d{font-size:11px;color:var(--dim);margin-top:2px;line-height:1.35}
+.st.ok{opacity:.55;cursor:default}
+
+/* ---------- toast ---------- */
+#toast{position:fixed;bottom:22px;right:22px;z-index:9;padding:12px 16px;border-radius:10px;background:#1c070a;border:1px solid var(--line-2);
+  box-shadow:0 10px 30px rgba(0,0,0,.5);transform:translateY(20px);opacity:0;transition:.25s;max-width:360px}
+#toast.show{transform:none;opacity:1} #toast.bad{border-color:var(--red);color:#ffb3bd}
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+
+<div class="app">
+  <div class="titlebar pywebview-drag-region">
+    <div class="logo pywebview-drag-region"><b>//</b>&nbsp;ACHADINHOS <small>LAUNCHER</small></div>
+    <div class="drag pywebview-drag-region"></div>
+    <button class="wbtn" onclick="api('minimizar')" title="Minimizar"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M1 5h8" stroke="currentColor" stroke-width="1.4"/></svg></button>
+    <button class="wbtn x" onclick="api('fechar')" title="Fechar"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M1.5 1.5l7 7M8.5 1.5l-7 7" stroke="currentColor" stroke-width="1.4"/></svg></button>
+  </div>
+
+  <div class="body">
+    <nav>
+      <button class="on" data-v="painel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Painel</button>
+      <button data-v="ofertas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L2 12V2h10l8.6 8.6a2 2 0 010 2.8z"/><circle cx="7" cy="7" r="1.5"/></svg>Ofertas<span class="pill" id="nav-of" hidden>0</span></button>
+      <button data-v="ganhos"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Ganhos</button>
+      <button data-v="posts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>Posts</button>
+      <button data-v="loja"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1.5-5h15L21 9M3 9v11h18V9M3 9h18M9 20v-6h6v6"/></svg>Loja<span class="pill" id="nav-fila" hidden>0</span></button>
+      <button data-v="canais"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>Canais</button>
+      <button data-v="contas"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Contas</button>
+      <button data-v="config"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Config</button>
+      <button data-v="logs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 17l6-6-6-6M12 19h8"/></svg>Logs</button>
+      <div class="navfoot">
+        <div class="row"><span>Posts hoje</span><b id="nf-posts">0</b></div>
+        <div class="row"><span>Ganho hoje</span><b id="nf-ganho">R$ 0</b></div>
+      </div>
+    </nav>
+
+    <main>
+      <!-- ================= PAINEL ================= -->
+      <section class="view on" id="v-painel">
+        <div class="card hero">
+          <div class="power" id="power" onclick="togglePower()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v8M6.3 6.8a8 8 0 1011.4 0"/></svg></div>
+          <div>
+            <div class="status-t" id="st-t"><span class="dot"></span>Desligado</div>
+            <div class="status-s" id="st-s">Clique no botão pra começar a postar</div>
+            <div class="badges" id="badges"></div>
+          </div>
+          <div class="actions">
+            <button class="btn ghost" id="b-sync" onclick="acao('sincronizar_shopee',this)">Atualizar ganhos</button>
+            <button class="btn red" id="b-post" onclick="acao('postar_agora',this)">Postar agora</button>
+          </div>
+        </div>
+
+        <div class="card check" id="checklist" hidden>
+          <h3>Primeiros passos <span id="ck-n" style="letter-spacing:0;text-transform:none"></span></h3>
+          <div class="ck-track"><i id="ck-bar" style="width:0"></i></div>
+          <div class="steps2" id="ck-steps"></div>
+        </div>
+        <div class="grid kpis">
+          <div class="card kpi main"><div class="l">Ganho no mês</div><div class="v" id="k-mes">R$ 0,00</div><div class="s" id="k-mes-s">—</div></div>
+          <div class="card kpi"><div class="l">Hoje</div><div class="v" id="k-hoje">R$ 0,00</div><div class="s">comissões de hoje</div></div>
+          <div class="card kpi"><div class="l">Total acumulado</div><div class="v" id="k-total">R$ 0,00</div><div class="s" id="k-vendas">0 vendas</div></div>
+          <div class="card kpi"><div class="l">Posts hoje</div><div class="v" id="k-posts">0</div><div class="s" id="k-posts-s">—</div></div>
+        </div>
+
+        <div class="grid row2">
+          <div class="card">
+            <h3>Ganhos · 14 dias <span class="legend"><span style="--c:var(--shopee)">Shopee</span><span style="--c:var(--ml)">ML</span><span style="--c:var(--ali)">AliExpress</span><span style="--c:var(--amz)">Amazon</span></span></h3>
+            <div class="chart" id="chart"></div>
+          </div>
+          <div class="card split">
+            <h3 style="margin:0">Por plataforma</h3>
+            <div id="meters" class="split" style="gap:10px"></div>
+            <h3 style="margin:6px 0 0">Atividade</h3>
+            <div class="logs mini-log" id="mini-log"></div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px">
+          <h3>Últimos posts</h3>
+          <div class="list" id="ult-posts"></div>
+        </div>
+      </section>
+
+      <!-- ================= OFERTAS ================= -->
+      <section class="view" id="v-ofertas">
+        <h2>Ofertas</h2>
+        <div class="sub">Cole o link de afiliado que você gera no painel do ML, da Shopee, etc. O bot cria o card e posta em todos os canais — essas têm prioridade na fila.</div>
+        <div class="card" style="margin-bottom:14px">
+          <h3>Feed da Shopee (100 mil produtos, atualiza todo dia) <span id="fd-st" style="letter-spacing:0;text-transform:none"></span></h3>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+            <div style="flex:1;min-width:260px;color:var(--muted);font-size:12px;line-height:1.5" id="fd-info">—</div>
+            <button class="btn ghost" onclick="fdImportar(this)">Importar arquivo baixado</button>
+            <button class="btn red" onclick="fdBaixar(this)">Baixar agora</button>
+          </div>
+        </div>
+        <div class="two" style="grid-template-columns:1.25fr 1fr">
+          <div class="card">
+            <h3 id="of-tit">Nova oferta</h3>
+            <div class="grid" style="grid-template-columns:1fr 2fr;gap:10px">
+              <label>Loja<select id="of-plat" class="of-in"><option value="mercadolivre">Mercado Livre</option><option value="shopee">Shopee</option><option value="aliexpress">AliExpress</option><option value="amazon">Amazon</option><option value="outra">Outra</option></select></label>
+              <label>Link de afiliado <span style="text-transform:none;letter-spacing:0;color:var(--dim)">— cole e eu preencho o resto</span>
+                <span style="display:flex;gap:8px"><input id="of-link" class="of-in" placeholder="https://mercadolivre.com/sec/...">
+                <button class="btn ghost" style="flex:none;padding:0 12px" id="of-ler" onclick="ofLer(this)">Ler link</button></span></label>
+            </div>
+            <label style="margin-top:10px">Nome do produto<input id="of-nome" class="of-in" placeholder="Placa de Vídeo ASRock Radeon RX 7600 8GB"></label>
+            <div class="grid" style="grid-template-columns:1fr 1fr 90px;gap:10px;margin-top:10px">
+              <label>Preço<input id="of-preco" class="of-in" placeholder="2.235,28"></label>
+              <label>Preço antigo (opcional)<input id="of-antigo" class="of-in" placeholder="2.799,90"></label>
+              <label>Moeda<select id="of-moeda" class="of-in"><option>BRL</option><option>USD</option><option>EUR</option></select></label>
+            </div>
+            <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
+              <label>Nota (0–5)<input id="of-nota" class="of-in" placeholder="4.9"></label>
+              <label>Vendidos<input id="of-vendas" class="of-in" placeholder="1000"></label>
+              <label class="chk" style="margin:22px 0 0;height:38px"><input type="checkbox" id="of-frete" class="of-in">Frete grátis</label>
+            </div>
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-top:10px">
+              <label>Cupom (opcional)<input id="of-cupom" class="of-in" placeholder="MELIPILOTO" style="text-transform:uppercase"></label>
+              <label>Condição (opcional)<input id="of-cond" class="of-in" placeholder="no Pix"></label>
+            </div>
+            <label style="margin-top:10px">Foto (link da imagem ou escolha do PC)
+              <span style="display:flex;gap:8px"><input id="of-img" class="of-in" placeholder="https://http2.mlstatic.com/....jpg">
+              <button class="btn ghost" style="flex:none" onclick="ofFoto(this)">Do PC</button></span></label>
+            <div style="font-size:12px;color:var(--dim);margin-top:6px">Dica: na página do produto, clique com o botão direito na foto → "Copiar endereço da imagem".</div>
+            <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end">
+              <button class="btn ghost" onclick="ofLimpar()">Limpar</button>
+              <button class="btn red" onclick="ofSalvar(this)">Pôr na fila</button>
+            </div>
+          </div>
+          <div class="card" style="display:flex;flex-direction:column">
+            <h3>Prévia da imagem <select id="of-idi" style="width:auto;height:28px;padding:0 8px" onchange="ofPrevia()"><option value="pt">PT</option><option value="en">EN</option><option value="es">ES</option></select></h3>
+            <div id="of-prev" style="flex:1;display:grid;place-items:center;border-radius:12px;background:rgba(0,0,0,.25);min-height:300px">
+              <div class="empty">Preencha nome e preço</div></div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <h3>Fila e postadas <span id="of-n" style="letter-spacing:0;text-transform:none"></span></h3>
+          <div id="of-lista"></div>
+        </div>
+      </section>
+
+      <!-- ================= GANHOS ================= -->
+      <section class="view" id="v-ganhos">
+        <h2>Ganhos</h2>
+        <div class="sub">Importe os relatórios das lojas ou lance à mão. Quando a Open API da Shopee liberar, ela atualiza sozinha.</div>
+        <div class="card" style="margin-bottom:14px">
+          <h3>Lançar ganho manual</h3>
+          <div class="form">
+            <label>Plataforma<select id="g-plat"><option value="mercadolivre">Mercado Livre</option><option value="shopee">Shopee</option><option value="aliexpress">AliExpress</option><option value="amazon">Amazon</option></select></label>
+            <label>Valor (R$)<input id="g-valor" placeholder="12,50"></label>
+            <label>Descrição<input id="g-desc" placeholder="Ex.: comissões da semana"></label>
+            <label>Data<input id="g-data" type="date"></label>
+            <button class="btn red" onclick="addGanho(this)">Adicionar</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <h3>Importar relatório de vendas</h3>
+          <div style="color:var(--muted);margin-bottom:12px">Baixe o relatório de comissões no painel de afiliado de cada loja (CSV ou Excel) e importe aqui. Pode importar o mesmo arquivo de novo que não duplica.</div>
+          <div class="form" style="grid-template-columns:200px auto 1fr">
+            <label>Loja<select id="rel-plat"><option value="shopee">Shopee</option><option value="mercadolivre">Mercado Livre</option><option value="amazon">Amazon</option><option value="aliexpress">AliExpress</option></select></label>
+            <button class="btn red" onclick="relImportar(this)">Escolher arquivo</button>
+            <div style="font-size:12px;color:var(--dim);line-height:1.5;align-self:center">Shopee: Relatório → Relatório de vendas → Exportar · Amazon: Relatórios → Baixar · ML e AliExpress: relatório de comissões do painel de afiliado</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Histórico <button class="btn ghost" style="height:30px" onclick="acao('sincronizar_shopee',this)">Sincronizar Shopee</button></h3>
+          <div class="list" id="lista-ganhos"></div>
+        </div>
+      </section>
+
+      <!-- ================= POSTS ================= -->
+      <section class="view" id="v-posts">
+        <h2>Posts</h2>
+        <div class="sub">O que o bot já mandou pro canal.</div>
+        <div class="card"><div class="list" id="lista-posts"></div></div>
+      </section>
+
+      <!-- ================= LOJA DA MÃE ================= -->
+      <section class="view" id="v-loja">
+        <h2>Loja da Mãe</h2>
+        <div class="sub">Ela escreve o anúncio e escolhe os grupos. O launcher avisa a hora, copia o texto e abre o grupo — ela só cola e publica.</div>
+        <div class="tabs">
+          <button class="on" data-s="fila">Fila de hoje</button>
+          <button data-s="anuncios">Anúncios</button>
+          <button data-s="grupos">Grupos</button>
+        </div>
+
+        <!-- FILA -->
+        <div class="sub-v on" id="s-fila">
+          <div id="prox"></div>
+          <div class="two" style="margin-top:14px">
+            <div class="card"><h3>Próximos na fila <button class="btn ghost" style="height:28px;padding:0 12px" onclick="lojaAcao('loja_limpar_fila',this)">Limpar fila</button></h3><div class="list" id="l-fila"></div></div>
+            <div class="card"><h3>Postados <span id="l-hoje" style="letter-spacing:0;text-transform:none"></span></h3><div class="list" id="l-hist"></div></div>
+          </div>
+        </div>
+
+        <!-- ANÚNCIOS -->
+        <div class="sub-v" id="s-anuncios">
+          <div class="two">
+            <div class="card">
+              <h3 id="ad-tit">Novo anúncio</h3>
+              <label>Título (só pra ela se achar)<input id="ad-titulo" placeholder="Ex.: Porta de madeira maciça"></label>
+              <label style="margin-top:10px">Texto do anúncio<textarea id="ad-texto" style="min-height:170px" placeholder="🚪 Porta de madeira maciça 80x210&#10;💰 R$ 450,00 à vista&#10;🚚 Entregamos na região&#10;📲 Chama no WhatsApp: (21) 9xxxx-xxxx"></textarea></label>
+              <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase">Fotos</span>
+                <button class="btn ghost" style="height:30px" onclick="escolherFotos(this)">+ Adicionar fotos</button>
+              </div>
+              <div class="thumbs" id="ad-fotos"></div>
+              <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end">
+                <button class="btn ghost" onclick="novoAnuncio()">Limpar</button>
+                <button class="btn red" onclick="salvarAnuncio(this)">Salvar anúncio</button>
+              </div>
+            </div>
+            <div class="card">
+              <h3>Mandar pra fila</h3>
+              <label>Qual anúncio<select id="f-anuncio"></select></label>
+              <div style="margin:12px 0 6px;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;display:flex;justify-content:space-between">
+                <span>Em quais grupos</span><a href="#" style="color:#ff6b80" onclick="marcarTodos();return false">marcar todos</a></div>
+              <div id="f-grupos" style="max-height:240px;overflow:auto"></div>
+              <label style="margin-top:10px">Avisar a cada (minutos)<input id="f-int" type="number" min="5" value="10"></label>
+              <div style="margin-top:14px;text-align:right"><button class="btn red" onclick="montarFila(this)">Montar fila</button></div>
+            </div>
+          </div>
+          <div class="card" style="margin-top:14px"><h3>Anúncios salvos</h3><div id="l-ads"></div></div>
+        </div>
+
+        <!-- GRUPOS -->
+        <div class="sub-v" id="s-grupos">
+          <div class="card" style="margin-bottom:14px">
+            <h3>Adicionar grupo</h3>
+            <div class="form" style="grid-template-columns:1fr 2fr auto">
+              <label>Nome<input id="g-nome" placeholder="Vendas Campo Grande RJ"></label>
+              <label>Link do grupo<input id="g-url" placeholder="https://www.facebook.com/groups/..."></label>
+              <button class="btn red" onclick="addGrupo(this)">Adicionar</button>
+            </div>
+            <div style="margin-top:10px;font-size:12px;color:var(--dim)">Pra pegar o link: abra o grupo no navegador e copie o endereço lá de cima. Leia as regras de cada grupo — muitos só deixam postar venda em dias certos.</div>
+          </div>
+          <div class="card"><h3>Grupos cadastrados</h3><div class="list" id="l-grupos"></div></div>
+        </div>
+      </section>
+
+      <!-- ================= CANAIS ================= -->
+      <section class="view" id="v-canais">
+        <h2>Canais</h2>
+        <div class="sub">Onde o bot posta. Cada canal tem idioma próprio e pode aceitar só algumas lojas.</div>
+        <div class="two">
+          <div class="card">
+            <h3 id="cn-tit">Novo canal</h3>
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+              <label>Tipo<select id="cn-tipo" onchange="cnCampos()">
+                <option value="telegram">Telegram</option><option value="discord">Discord (webhook)</option>
+                <option value="postiz">Postiz → Instagram, X, Facebook, Threads…</option><option value="webhook">Webhook / n8n (vídeos)</option></select></label>
+              <label>Nome<input id="cn-nome" placeholder="Ex.: Achadinhos USA"></label>
+            </div>
+            <div id="cn-campos" style="margin-top:10px"></div>
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px;margin-top:10px" id="cn-idioma-box">
+              <label>Idioma dos posts<select id="cn-idioma"><option value="pt">Português</option><option value="en">English</option><option value="es">Español</option></select></label>
+              <div></div>
+            </div>
+            <div style="margin:12px 0 6px;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase">Lojas aceitas (nenhuma marcada = todas)</div>
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:6px" id="cn-plats"></div>
+            <div style="margin-top:14px;display:flex;gap:10px;justify-content:flex-end">
+              <button class="btn ghost" onclick="cnLimpar()">Limpar</button>
+              <button class="btn ghost" onclick="cnTestar(this)">Testar</button>
+              <button class="btn red" onclick="cnSalvar(this)">Salvar canal</button>
+            </div>
+          </div>
+          <div class="card"><h3>Seus canais</h3><div class="list" id="cn-lista"></div>
+            <div style="margin-top:12px;padding:12px;border:1px dashed var(--line,#333);border-radius:10px">
+              <div style="font-weight:600;margin-bottom:6px">📌 Crescer o canal do Telegram</div>
+              <div style="font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:10px">Mensagem fixada de boas-vindas (quem entra vê o que vai receber e ativa as notificações) e o TOP 5 da semana (sai sozinho toda sexta às 20h).</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button class="btn ghost" onclick="cresc('canal_boas_vindas',this)">Postar e fixar boas-vindas</button>
+                <button class="btn ghost" onclick="cresc('canal_top_semana',this)">Postar TOP 5 agora</button>
+              </div>
+            </div>
+            <div style="margin-top:12px;font-size:12px;color:var(--dim);line-height:1.6">
+              <b style="color:var(--muted)">TikTok e Kwai:</b> eles só aceitam vídeo. Crie um canal <b>Webhook / n8n</b> apontando pro seu fluxo do n8n — cada oferta chega lá com produto, imagem, link e textos em 3 idiomas, pronta pra virar vídeo.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= CONTAS ================= -->
+      <section class="view" id="v-contas">
+        <h2>Contas</h2>
+        <div class="sub">Chaves das lojas, do Telegram e da IA. Ficam salvas só neste PC (arquivo segredos.json).</div>
+        <div class="grid" id="ct-grupos" style="grid-template-columns:1fr 1fr;gap:14px"></div>
+        <div class="grid" style="grid-template-columns:1fr 1fr;gap:14px;margin-top:14px">
+          <div class="card">
+            <h3>Mercados (fora do Brasil)</h3>
+            <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:10px">
+              <label>AliExpress: país<select id="ct-ali-pais"></select></label>
+              <label>Moeda<select id="ct-ali-moeda"></select></label>
+              <label>Idioma<select id="ct-ali-idioma"><option>EN</option><option>PT</option><option>ES</option><option>FR</option><option>DE</option><option>IT</option></select></label>
+            </div>
+            <label style="margin-top:10px">Amazon: loja<select id="ct-amz"></select></label>
+          </div>
+          <div class="card">
+            <h3>IA (CrewAI + Claude) <span id="ia-st" style="letter-spacing:0;text-transform:none"></span></h3>
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
+              <label>Motor<select id="ct-ia-motor"><option value="crewai">CrewAI (2 agentes)</option><option value="direto">Claude direto (mais rápido)</option></select></label>
+              <label>Modelo<input id="ct-ia-modelo" placeholder="claude-haiku-5-5"></label>
+            </div>
+            <div class="switch" id="ct-ia-ativa" onclick="this.classList.toggle('on')" style="margin-top:10px"><span>Usar IA pra escolher e escrever os posts</span><span class="k"></span></div>
+            <div style="margin-top:10px;display:flex;justify-content:space-between;align-items:center">
+              <span style="font-size:12px;color:var(--dim)">Sem CrewAI instalado, usa Claude direto automaticamente.</span>
+              <button class="btn ghost" style="height:32px" id="ia-inst" onclick="iaInstalar(this)">Instalar CrewAI</button>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:14px;text-align:right"><button class="btn red" onclick="ctSalvar(this)">Salvar tudo</button></div>
+      </section>
+
+      <!-- ================= CONFIG ================= -->
+      <section class="view" id="v-config">
+        <h2>Configurações</h2>
+        <div class="sub">As chaves ficam na aba <b>Contas</b>. Aqui é o comportamento do bot.</div>
+        <div class="grid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:14px">
+          <div class="switch" id="sw-shopee" onclick="this.classList.toggle('on')"><span>Postar da <b style="color:var(--shopee)">Shopee</b></span><span class="k"></span></div>
+          <div class="switch" id="sw-ml" onclick="this.classList.toggle('on')"><span>Postar do <b style="color:var(--ml)">Mercado Livre</b></span><span class="k"></span></div>
+          <div class="switch" id="sw-ali" onclick="this.classList.toggle('on')"><span>Postar do <b style="color:var(--ali)">AliExpress</b></span><span class="k"></span></div>
+          <div class="switch" id="sw-amz" onclick="this.classList.toggle('on')"><span>Postar da <b style="color:var(--amz)">Amazon</b></span><span class="k"></span></div>
+          <div class="switch" id="sw-auto" onclick="this.classList.toggle('on')"><span>Ligar bot ao abrir</span><span class="k"></span></div>
+          <div class="switch" id="sw-win" onclick="autostart(this)"><span>Abrir junto com o Windows</span><span class="k"></span></div>
+          <div class="switch" id="sw-acordado" onclick="this.classList.toggle('on')"><span>Não deixar o PC dormir (bot ligado)</span><span class="k"></span></div>
+          <div class="switch" id="sw-loja" onclick="this.classList.toggle('on')"><span>Mostrar aba Loja (grupos do Facebook)</span><span class="k"></span></div>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <h3>Conectar Mercado Livre <span id="ml-st" style="letter-spacing:0;text-transform:none"></span></h3>
+          <div style="color:var(--muted);margin-bottom:12px">Faça login com a sua conta do ML uma vez só. <b>1)</b> Clique em abrir login e autorize. <b>2)</b> Vai abrir uma página do Google — copie o endereço inteiro lá de cima e cole aqui.</div>
+          <div class="form" style="grid-template-columns:auto 1fr auto auto">
+            <button class="btn ghost" onclick="lojaMl('ml_abrir_login',this)">1 · Abrir login do ML</button>
+            <input id="ml-link" placeholder="Cole aqui o link https://www.google.com/?code=...">
+            <button class="btn red" onclick="lojaMl('ml_conectar',this,$('ml-link').value)">2 · Conectar</button>
+            <button class="del" title="Desconectar" onclick="lojaMl('ml_desconectar',this)">✕</button>
+          </div>
+        </div>
+        <div class="card" style="margin-bottom:14px">
+          <h3>Palavras que o bot procura <span style="text-transform:none;letter-spacing:0">uma por linha</span></h3>
+          <textarea id="c-palavras"></textarea>
+          <label style="margin-top:14px">Imagem do post<select id="c-estilo"><option value="foto">Só a foto do produto (padrão)</option><option value="card">Card com preço e cupom na imagem</option></select></label>
+          <label style="margin-top:14px">Rodapé dos posts fora do Telegram (Instagram, X, Discord…)<input id="c-rodape" placeholder="📲 Mais achados: t.me/seucanal"></label>
+          <label style="margin-top:14px">Link do seu canal do WhatsApp (vira botão nos posts do Telegram)<input id="c-zap" placeholder="https://whatsapp.com/channel/..."></label>
+          <h3 style="margin-top:14px">Palavras pra fora do Brasil (AliExpress / Amazon) <span style="text-transform:none;letter-spacing:0">em inglês, uma por linha</span></h3>
+          <textarea id="c-palavras-g"></textarea>
+        </div>
+        <div class="card">
+          <h3>Ritmo e filtros</h3>
+          <div class="grid cfg">
+            <label>Intervalo entre posts (min)<input id="c-intervalo" type="number" min="5"></label>
+            <label>Máximo de posts por dia<input id="c-max" type="number" min="1"></label>
+            <label>Horário (início — fim)<span style="display:flex;gap:8px"><input id="c-hi" type="number" min="0" max="23"><input id="c-hf" type="number" min="1" max="24"></span></label>
+            <label>Preço mínimo (R$)<input id="c-pmin" type="number"></label>
+            <label>Preço máximo (R$)<input id="c-pmax" type="number"></label>
+            <label>Nota mínima (Shopee)<input id="c-nota" type="number" step="0.1" min="0" max="5"></label>
+            <label>Vendas mínimas (Shopee)<input id="c-vendas" type="number" min="0"></label>
+          </div>
+          <div style="margin-top:16px;text-align:right"><button class="btn red" onclick="salvarCfg(this)">Salvar</button></div>
+        </div>
+      </section>
+
+      <!-- ================= LOGS ================= -->
+      <section class="view" id="v-logs">
+        <h2>Logs</h2>
+        <div class="sub">Tudo que o bot fez, em tempo real.</div>
+        <div class="card"><div class="logs" id="logs"></div></div>
+      </section>
+    </main>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+/* ================= fundo animado: veias vermelhas + estrelas ================= */
+(function(){
+  const c=document.getElementById('fx'),x=c.getContext('2d');let W,H,stars=[],veins=[];
+  function size(){W=c.width=innerWidth;H=c.height=innerHeight;
+    stars=Array.from({length:90},()=>({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.1+.2,a:Math.random()}));
+    veins=Array.from({length:7},(_,i)=>({x:W*(.15+Math.random()*.7),y:H*(.15+Math.random()*.7),a:Math.random()*6.28,s:.6+Math.random(),seed:Math.random()*1000}));}
+  addEventListener('resize',size);size();
+  function n(t,s){return Math.sin(t*1.3+s)*.6+Math.sin(t*.7+s*2.1)*.4}
+  function frame(t){t/=1000;x.fillStyle='#070203';x.fillRect(0,0,W,H);
+    const g=x.createRadialGradient(W*.55,H*.35,0,W*.55,H*.35,Math.max(W,H)*.7);
+    g.addColorStop(0,'rgba(120,0,18,.35)');g.addColorStop(1,'rgba(7,2,3,0)');x.fillStyle=g;x.fillRect(0,0,W,H);
+    for(const s of stars){x.globalAlpha=.25+.35*Math.abs(Math.sin(t*.6+s.a*9));x.fillStyle='#fff';x.fillRect(s.x,s.y,s.r,s.r)}
+    x.globalAlpha=1;x.globalCompositeOperation='lighter';
+    for(const v of veins){let px=v.x,py=v.y,ang=v.a+n(t*.15,v.seed)*.5;
+      x.beginPath();x.moveTo(px,py);
+      for(let k=0;k<70;k++){ang+=n(k*.18+t*.25,v.seed)*.22;px+=Math.cos(ang)*6*v.s;py+=Math.sin(ang)*6*v.s;x.lineTo(px,py)}
+      const pul=.5+.5*Math.sin(t*.8+v.seed);
+      x.strokeStyle=`rgba(255,25,55,${.05+.07*pul})`;x.lineWidth=7;x.shadowBlur=0;x.stroke();
+      x.strokeStyle=`rgba(255,60,85,${.25+.35*pul})`;x.lineWidth=1.2;x.shadowColor='#ff1f3d';x.shadowBlur=14;x.stroke();x.shadowBlur=0}
+    x.globalCompositeOperation='source-over';requestAnimationFrame(frame)}
+  requestAnimationFrame(frame);
+})();
+
+/* ================= ponte com o Python ================= */
+const DEMO=location.search.includes('demo');
+function api(m,...a){
+  if(DEMO) return Promise.resolve(window.__mock[m]?window.__mock[m](...a):{ok:true,msg:'demo'});
+  return window.pywebview.api[m](...a);
+}
+const $=id=>document.getElementById(id);
+const brl=v=>'R$ '+(+v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const hora=ts=>new Date(ts*1000).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+const dataH=ts=>new Date(ts*1000).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+const NOME={shopee:'Shopee',mercadolivre:'Mercado Livre',aliexpress:'AliExpress',amazon:'Amazon'};
+const COR={shopee:'var(--shopee)',mercadolivre:'var(--ml)',aliexpress:'var(--ali)',amazon:'var(--amz)'};
+let ESTADO=null;
+
+function toast(msg,bad){const t=$('toast');t.textContent=msg;t.className='show'+(bad?' bad':'');clearTimeout(t._h);t._h=setTimeout(()=>t.className='',3200)}
+
+/* navegação */
+document.querySelectorAll('nav button[data-v]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));$('v-'+b.dataset.v).classList.add('on');
+  if(b.dataset.v==='config')carregarCfg();
+  if(b.dataset.v==='loja')carregarLoja();
+  if(b.dataset.v==='canais'){cnLimpar();carregarCanais()}
+  if(b.dataset.v==='contas')carregarContas();
+  if(b.dataset.v==='ofertas'){carregarOfertas();fdCarregar()}
+});
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');
+  document.querySelectorAll('.sub-v').forEach(v=>v.classList.remove('on'));$('s-'+b.dataset.s).classList.add('on');
+  carregarLoja();
+});
+
+
+/* ================= CANAIS ================= */
+let CN_EDIT=null, POSTIZ_INT=[];
+const PLATS=['shopee','mercadolivre','aliexpress','amazon'];
+const TIPO_NOME={telegram:'Telegram',discord:'Discord',postiz:'Postiz',webhook:'Webhook/n8n'};
+const IDI={pt:'🇧🇷 PT',en:'🇺🇸 EN',es:'🇪🇸 ES'};
+function cnCampos(c={}){
+  const t=$('cn-tipo').value; let h='';
+  if(t==='telegram')h=`<div class="grid" style="grid-template-columns:1fr 1fr;gap:10px"><label>@canal ou id<input id="cf-chat" value="${esc(c.chat||'')}" placeholder="@achadinhos_usa"></label>
+     <label>Token do bot (vazio = o das Contas)<input id="cf-token" value="${esc(c.token||'')}" placeholder="opcional"></label></div>`;
+  if(t==='discord')h=`<label>Webhook do canal<input id="cf-webhook" value="${esc(c.webhook||'')}" placeholder="https://discord.com/api/webhooks/..."></label>
+     <div style="font-size:12px;color:var(--dim);margin-top:6px">No Discord: Editar canal → Integrações → Webhooks → Novo → Copiar URL.</div>`;
+  if(t==='postiz')h=`<div class="grid" style="grid-template-columns:1fr 1fr;gap:10px"><label>URL da API<input id="cf-url" value="${esc(c.url||'https://api.postiz.com/public/v1')}"></label>
+     <label>API key<input id="cf-key" value="${esc(c.api_key||'')}" placeholder="Settings → Public API"></label></div>
+     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px"><span style="font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase">Redes (nenhuma = todas)</span>
+     <button class="btn ghost" style="height:28px" onclick="cnPostiz(this)">Carregar redes</button></div><div id="cf-integ" class="grid" style="grid-template-columns:1fr 1fr;gap:6px;margin-top:6px"></div>`;
+  if(t==='webhook')h=`<label>URL do webhook (n8n)<input id="cf-url" value="${esc(c.url||'')}" placeholder="https://seu-n8n/webhook/..."></label>
+     <div style="margin:10px 0 6px;font-size:11px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase">Idiomas enviados</div>
+     <div class="grid" style="grid-template-columns:1fr 1fr 1fr;gap:6px">${Object.keys(IDI).map(i=>`<label class="chk"><input type="checkbox" class="cf-idi" value="${i}" ${(c.idiomas||['pt','en','es']).includes(i)?'checked':''}>${IDI[i]}</label>`).join('')}</div>`;
+  $('cn-campos').innerHTML=h;$('cn-idioma-box').style.display=t==='webhook'?'none':'';
+  if(t==='postiz'){POSTIZ_INT=c._integ||[];renderInteg(c.integracoes||[])}
+}
+function renderInteg(sel){$('cf-integ')&&($('cf-integ').innerHTML=POSTIZ_INT.map(i=>`<label class="chk"><input type="checkbox" class="cf-int" value="${i.id}" ${sel.includes(i.id)?'checked':''}>${esc(i.nome)}<span class="m">${esc(i.tipo||'')}</span></label>`).join('')||'')}
+async function cnPostiz(btn){btn.classList.add('busy');try{const r=await api('postiz_integracoes',$('cf-url').value,$('cf-key').value);
+  if(!r.ok)return toast(r.msg,true);POSTIZ_INT=r.lista;renderInteg([...document.querySelectorAll('.cf-int:checked')].map(i=>i.value));toast(`${r.lista.length} rede(s) encontrada(s)`)}finally{btn.classList.remove('busy')}}
+function cnDados(){
+  const t=$('cn-tipo').value,v=id=>($(id)||{}).value||'';
+  const c={id:CN_EDIT,tipo:t,nome:$('cn-nome').value.trim()||TIPO_NOME[t],ativo:true,idioma:$('cn-idioma').value,
+    plataformas:[...document.querySelectorAll('.cn-plat:checked')].map(i=>i.value)};
+  if(t==='telegram'){c.chat=v('cf-chat').trim();c.token=v('cf-token').trim()}
+  if(t==='discord')c.webhook=v('cf-webhook').trim();
+  if(t==='postiz'){c.url=v('cf-url').trim();c.api_key=v('cf-key').trim();c.integracoes=[...document.querySelectorAll('.cf-int:checked')].map(i=>i.value)}
+  if(t==='webhook'){c.url=v('cf-url').trim();c.idiomas=[...document.querySelectorAll('.cf-idi:checked')].map(i=>i.value)}
+  return c}
+function cnLimpar(){CN_EDIT=null;$('cn-tit').textContent='Novo canal';$('cn-nome').value='';$('cn-tipo').value='telegram';$('cn-idioma').value='pt';
+  $('cn-plats').innerHTML=PLATS.map(p=>`<label class="chk"><input type="checkbox" class="cn-plat" value="${p}"><span style="color:${COR[p]}">${NOME[p]}</span></label>`).join('');cnCampos()}
+async function cnSalvar(btn){const r=await api('canais_salvar',cnDados());toast(r.msg,!r.ok);if(r.ok){cnLimpar();carregarCanais()}}
+async function cresc(m,btn){if(!confirm('Isso vai postar no seu canal do Telegram. Continuar?'))return;btn.classList.add('busy');try{const r=await api(m);toast(r.msg,!r.ok)}finally{btn.classList.remove('busy')}}
+async function cnTestar(btn){btn.classList.add('busy');try{const r=await api('canais_testar',cnDados());toast(r.msg,!r.ok)}finally{btn.classList.remove('busy')}}
+let CANAIS=[];
+async function carregarCanais(){CANAIS=await api('canais_listar');
+  $('cn-lista').innerHTML=CANAIS.map(c=>`<div class="item" style="grid-template-columns:1fr auto auto">
+    <div style="min-width:0"><div class="n">${esc(c.nome||c.tipo)}</div>
+    <div class="m">${TIPO_NOME[c.tipo]} · ${c.tipo==='webhook'?(c.idiomas||[]).map(i=>IDI[i]).join(' '):IDI[c.idioma||'pt']} · ${(c.plataformas&&c.plataformas.length)?c.plataformas.map(p=>NOME[p]).join(', '):'todas as lojas'}</div></div>
+    ${c.fixo?'<span class="tag" style="color:var(--dim)">pelas Contas</span>':`<button class="btn ghost" style="height:28px;padding:0 10px" onclick="cnEditar('${c.id}')">Editar</button>`}
+    ${c.fixo?'<span></span>':`<button class="del" onclick="if(confirmarApagar())api('canais_apagar','${c.id}').then(r=>{toast(r.msg);carregarCanais()})">✕</button>`}</div>`).join('')||'<div class="empty">Nenhum canal ainda</div>'}
+function cnEditar(id){const c=CANAIS.find(x=>x.id===id);if(!c)return;cnLimpar();CN_EDIT=id;$('cn-tit').textContent='Editando canal';
+  $('cn-tipo').value=c.tipo;$('cn-nome').value=c.nome||'';$('cn-idioma').value=c.idioma||'pt';
+  document.querySelectorAll('.cn-plat').forEach(i=>i.checked=(c.plataformas||[]).includes(i.value));cnCampos(c)}
+
+/* ================= CONTAS ================= */
+const PAISES=[['US','Estados Unidos','USD'],['BR','Brasil','BRL'],['GB','Reino Unido','GBP'],['ES','Espanha','EUR'],['FR','França','EUR'],['DE','Alemanha','EUR'],['IT','Itália','EUR'],['PT','Portugal','EUR'],['MX','México','MXN'],['CA','Canadá','CAD'],['AU','Austrália','AUD'],['CL','Chile','CLP'],['CO','Colômbia','COP']];
+const AMZ=['www.amazon.com','www.amazon.com.br','www.amazon.co.uk','www.amazon.de','www.amazon.fr','www.amazon.it','www.amazon.es','www.amazon.com.mx','www.amazon.ca','www.amazon.co.jp','www.amazon.com.au','www.amazon.in','www.amazon.nl','www.amazon.se','www.amazon.pl','www.amazon.ae','www.amazon.sa','www.amazon.sg','www.amazon.com.tr','www.amazon.com.be','www.amazon.ie','www.amazon.eg'];
+const AJUDA={'Shopee':'affiliate.shopee.com.br → Open API','Mercado Livre':'developers.mercadolivre.com.br + painel de afiliados','AliExpress':'portals.aliexpress.com → API (App Key/Secret) + Tracking ID','Amazon':'Associates do país → Creators API','Telegram':'@BotFather','IA (Claude)':'console.anthropic.com → API Keys'};
+async function carregarContas(){
+  const campos=await api('contas_listar'),g={};campos.forEach(c=>(g[c.grupo]=g[c.grupo]||[]).push(c));
+  $('ct-grupos').innerHTML=Object.entries(g).map(([nome,cs])=>`<div class="card"><h3>${nome} ${cs.every(c=>c.preenchido)?'<span class="badge ok">● ok</span>':''}</h3>
+    ${cs.map(c=>`<label style="margin-bottom:8px">${esc(c.rotulo)}<input data-k="${c.chave}" class="ct-in" ${c.senha?'type="password"':''} value="${esc(c.valor)}" autocomplete="off"></label>`).join('')}
+    <div style="font-size:11px;color:var(--dim)">Onde pegar: ${AJUDA[nome]||''}</div></div>`).join('');
+  const c=await api('ler_config');
+  $('ct-ali-pais').innerHTML=PAISES.map(p=>`<option value="${p[0]}">${p[1]}</option>`).join('');$('ct-ali-pais').value=c.aliexpress.pais;
+  $('ct-ali-moeda').innerHTML=[...new Set(PAISES.map(p=>p[2]))].map(m=>`<option>${m}</option>`).join('');$('ct-ali-moeda').value=c.aliexpress.moeda;
+  $('ct-ali-pais').onchange=()=>{const p=PAISES.find(x=>x[0]===$('ct-ali-pais').value);if(p)$('ct-ali-moeda').value=p[2]};
+  $('ct-ali-idioma').value=c.aliexpress.idioma;
+  $('ct-amz').innerHTML=AMZ.map(m=>`<option>${m}</option>`).join('');$('ct-amz').value=c.amazon.marketplace;
+  $('ct-ia-motor').value=c.ia.motor;$('ct-ia-modelo').value=c.ia.modelo;$('ct-ia-ativa').classList.toggle('on',!!c.ia.ativa);
+  iaStatus()}
+async function iaStatus(){const s=await api('ia_status');
+  $('ia-st').innerHTML=`<span class="badge ${s.chave?'ok':'no'}">${s.chave?'●':'○'} chave</span> <span class="badge ${s.crewai?'ok':'no'}">${s.crewai?'●':'○'} CrewAI</span>`;
+  $('ia-inst').textContent=s.instalando?'Instalando…':s.crewai?'CrewAI instalado':'Instalar CrewAI';$('ia-inst').classList.toggle('busy',s.instalando||s.crewai)}
+async function iaInstalar(btn){const r=await api('ia_instalar_crewai');toast(r.msg,!r.ok);iaStatus();const t=setInterval(async()=>{const s=await api('ia_status');iaStatus();if(!s.instalando)clearInterval(t)},4000)}
+// campo de senha com "••••••": ao clicar, limpa pra colar o valor novo sem misturar
+document.addEventListener('focusin',e=>{const i=e.target;if(i.classList&&i.classList.contains('ct-in')&&i.value==='••••••'){i.dataset.antes=i.value;i.value=''}});
+document.addEventListener('focusout',e=>{const i=e.target;if(i.classList&&i.classList.contains('ct-in')&&!i.value&&i.dataset.antes){i.value=i.dataset.antes;delete i.dataset.antes}});
+async function ctSalvar(btn){
+  const vals={};document.querySelectorAll('.ct-in').forEach(i=>vals[i.dataset.k]=i.value);
+  await api('contas_salvar',vals);
+  const r=await api('salvar_config',{aliexpress:{pais:$('ct-ali-pais').value,moeda:$('ct-ali-moeda').value,idioma:$('ct-ali-idioma').value},
+    amazon:{marketplace:$('ct-amz').value},ia:{motor:$('ct-ia-motor').value,modelo:$('ct-ia-modelo').value.trim()||'claude-haiku-5-5',ativa:$('ct-ia-ativa').classList.contains('on')}});
+  toast('Tudo salvo ✓');carregarContas();atualizar()}
+
+
+
+/* ================= OFERTAS ================= */
+let OF_EDIT=null, OFS=[], _ofT=null;
+function ofDados(){return {plataforma:$('of-plat').value,link:$('of-link').value.trim(),nome:$('of-nome').value.trim(),
+  preco:$('of-preco').value.trim(),preco_antigo:$('of-antigo').value.trim(),moeda:$('of-moeda').value,
+  nota:$('of-nota').value.trim(),vendas:$('of-vendas').value.trim(),frete_gratis:$('of-frete').checked,imagem:$('of-img').value.trim(),cupom:$('of-cupom').value.trim(),condicao:$('of-cond').value.trim()}}
+async function ofPrevia(){const uri=await api('ofertas_previa',ofDados(),$('of-idi').value);
+  $('of-prev').innerHTML=uri?`<img src="${uri}" style="max-width:100%;max-height:520px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.5)">`:'<div class="empty">Coloque a foto (link ou do PC)</div>'}
+document.addEventListener('input',e=>{if(e.target.classList&&e.target.classList.contains('of-in')){clearTimeout(_ofT);_ofT=setTimeout(ofPrevia,500)}});
+document.addEventListener('change',e=>{if(e.target.classList&&e.target.classList.contains('of-in')){clearTimeout(_ofT);_ofT=setTimeout(ofPrevia,200)}});
+async function ofFoto(btn){btn.classList.add('busy');try{const f=await api('ofertas_escolher_foto');if(f){$('of-img').value=f.nome;ofPrevia()}}finally{btn.classList.remove('busy')}}
+function ofLimpar(){OF_EDIT=null;$('of-tit').textContent='Nova oferta';document.querySelectorAll('.of-in').forEach(i=>i.type==='checkbox'?i.checked=false:(i.tagName==='SELECT'?0:i.value=''));
+  $('of-prev').innerHTML='<div class="empty">Preencha nome e preço</div>'}
+async function ofSalvar(btn){const r=await api('ofertas_salvar',ofDados(),OF_EDIT);toast(r.msg,!r.ok);if(r.ok){ofLimpar();carregarOfertas()}}
+function ofEditar(id){const o=OFS.find(x=>x.id===id);if(!o)return;OF_EDIT=id;$('of-tit').textContent='Editando oferta';
+  $('of-plat').value=o.plataforma||'outra';$('of-link').value=o.link;$('of-nome').value=o.nome;$('of-preco').value=o.preco;
+  $('of-antigo').value=o.preco_antigo||'';$('of-moeda').value=o.moeda||'BRL';$('of-nota').value=o.nota||'';$('of-vendas').value=o.vendas||'';
+  $('of-frete').checked=!!o.frete_gratis;$('of-img').value=o.imagem||'';$('of-cupom').value=o.cupom||'';$('of-cond').value=o.condicao||'';ofPrevia();$('v-ofertas').scrollIntoView({behavior:'smooth'})}
+async function ofPostar(id,btn){btn.classList.add('busy');try{const r=await api('ofertas_postar',id);toast(r.msg,!r.ok)}finally{btn.classList.remove('busy');carregarOfertas();atualizar()}}
+async function carregarOfertas(){const r=await api('ofertas_listar');OFS=r.lista;
+  $('of-n').textContent=`${r.fila} na fila`;
+  $('of-lista').innerHTML=OFS.map(o=>`<div class="ad">${o.imagem_uri?`<img src="${esc(o.imagem_uri)}" onerror="this.outerHTML='<div class=ph></div>'">`:'<div class="ph"></div>'}
+    <div style="min-width:0"><div class="t" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(o.nome)}</div>
+      <div class="d"><span class="tag ${o.plataforma}">${NOME[o.plataforma]||'Oferta'}</span> · ${(+o.preco).toLocaleString('pt-BR',{minimumFractionDigits:2})} ${o.moeda} · ${o.status==='fila'?'<b style="color:var(--warn)">na fila</b>':'postada '+dataH(o.postado_em)}</div></div>
+    <div style="display:flex;gap:6px">${o.status==='fila'?`<button class="btn red" style="height:30px;padding:0 12px" onclick="ofPostar(${o.id},this)">Postar agora</button>`:`<button class="btn ghost" style="height:30px;padding:0 12px" onclick="api('ofertas_repostar',${o.id}).then(r=>{toast(r.msg);carregarOfertas()})">Repostar</button>`}
+      <button class="btn ghost" style="height:30px;padding:0 12px" onclick="ofEditar(${o.id})">Editar</button>
+      <button class="del" onclick="if(confirmarApagar())api('ofertas_apagar',${o.id}).then(r=>{toast(r.msg);carregarOfertas()})">✕</button></div></div>`).join('')||'<div class="empty">Nenhuma oferta ainda — cole um link acima</div>'}
+
+
+async function ofLer(btn){const link=$('of-link').value.trim();if(!link.startsWith('http'))return toast('Cole o link completo (https://...)',true);
+  btn=btn||$('of-ler');btn.classList.add('busy');btn.textContent='Lendo…';
+  try{const r=await api('ofertas_extrair',link);const d=r.dados||{};
+    const br=v=>(+v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+    if(d.plataforma)$('of-plat').value=d.plataforma;
+    if(d.nome)$('of-nome').value=d.nome; if(d.preco)$('of-preco').value=br(d.preco);
+    if(d.preco_antigo&&d.preco_antigo>d.preco)$('of-antigo').value=br(d.preco_antigo);
+    if(d.moeda&&[...$('of-moeda').options].some(o=>o.value===d.moeda))$('of-moeda').value=d.moeda;
+    if(d.nota)$('of-nota').value=(+d.nota).toFixed(1); if(d.vendas)$('of-vendas').value=d.vendas;
+    if(d.frete_gratis)$('of-frete').checked=true; if(d.imagem)$('of-img').value=d.imagem;
+    toast(r.msg,!r.ok);ofPrevia()}
+  finally{btn.classList.remove('busy');btn.textContent='Ler link'}}
+document.addEventListener('paste',e=>{if(e.target&&e.target.id==='of-link')setTimeout(()=>ofLer(),50)});
+
+
+async function relImportar(btn){btn.classList.add('busy');try{const r=await api('relatorio_importar',$('rel-plat').value);toast(r.msg,!r.ok);atualizar()}finally{btn.classList.remove('busy')}}
+
+
+async function fdCarregar(){const r=await api('feed_resumo');
+  $('fd-st').innerHTML=r.total?`<span class="badge ok">● ${r.total} ofertas</span>`:'<span class="badge no">○ vazio</span>';
+  $('fd-info').innerHTML=(r.total?`Atualizado ${dataH(r.atualizado)} · ${r.categorias.slice(0,4).map(c=>esc(c.categoria)+' '+c.n).join(' · ')}<br>`:'')+
+    (r.affiliate_id?'O bot já posta daqui automaticamente quando a fila de ofertas manuais estiver vazia.':'<b style="color:var(--warn)">Falta o seu ID de afiliado da Shopee em Contas</b> — sem ele os links não contam pra você.')}
+async function fdImportar(btn){btn.classList.add('busy');try{const r=await api('feed_importar_arquivo');toast(r.msg,!r.ok)}finally{btn.classList.remove('busy');fdCarregar()}}
+async function fdBaixar(btn){const r=await api('feed_baixar');toast(r.msg,!r.ok);setTimeout(fdCarregar,15000)}
+
+/* ================= CHECKLIST ================= */
+function irPara(v){document.querySelector(`nav button[data-v=${v}]`).click()}
+function renderChecklist(e){
+  const cr=e.credenciais, total=Object.values(e.posts).reduce((a,p)=>a+p.total,0);
+  const passos=[
+    {ok:cr.aliexpress||cr.amazon||cr.shopee||e.ml_conectado||e.ofertas_fila>0||total>0, t:'Ter ofertas', d:'Cole links na aba Ofertas ou conecte uma loja', v:'ofertas'},
+    {ok:e.n_canais>0, t:'Ter um canal', d:'Telegram, Discord, Postiz ou n8n', v:'canais'},
+    {ok:cr.ia, t:'Chave da IA', d:'Claude escolhe e escreve os posts', v:'contas'},
+    {ok:total>0, t:'Primeiro post', d:'Clique em Postar agora', v:'painel'},
+    {ok:e.rodando||e.autostart, t:'Deixar no automático', d:'Ligue o bot ou abra com o Windows', v:'config'},
+  ];
+  const feitos=passos.filter(p=>p.ok).length;
+  $('checklist').hidden=feitos===passos.length;
+  $('ck-n').textContent=`${feitos} de ${passos.length}`;$('ck-bar').style.width=(feitos/passos.length*100)+'%';
+  $('ck-steps').innerHTML=passos.map((p,i)=>`<div class="st ${p.ok?'ok':''}" ${p.ok?'':`onclick="irPara('${p.v}')"`}>
+    <div class="i">${p.ok?'✓':i+1}</div><div class="t">${p.t}</div><div class="d">${p.d}</div></div>`).join('');
+}
+async function autostart(el){const ligar=!el.classList.contains('on');const r=await api('autostart_definir',ligar);toast(r.msg,!r.ok);
+  if(r.ok){el.classList.toggle('on',ligar);if(ligar)$('sw-auto').classList.add('on')}}
+
+/* ================= LOJA DA MÃE ================= */
+let LOJA={grupos:[],anuncios:[],fila:[]}, adFotos=[], adEditando=null, avisados=new Set();
+const dur=s=>{s=Math.max(0,s);const m=Math.floor(s/60);return m>=60?`${Math.floor(m/60)}h${String(m%60).padStart(2,'0')}`:`${m}:${String(s%60).padStart(2,'0')}`};
+
+function beep(){try{const c=new (window.AudioContext||window.webkitAudioContext)();[0,.22,.44].forEach((t,i)=>{
+  const o=c.createOscillator(),g=c.createGain();o.frequency.value=[880,1100,1320][i];o.connect(g);g.connect(c.destination);
+  g.gain.setValueAtTime(.0001,c.currentTime+t);g.gain.exponentialRampToValueAtTime(.25,c.currentTime+t+.02);
+  g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+t+.2);o.start(c.currentTime+t);o.stop(c.currentTime+t+.22)})}catch(e){}}
+
+async function carregarLoja(){
+  const [g,a,h]=await Promise.all([api('loja_grupos'),api('loja_anuncios'),api('loja_historico')]);
+  LOJA.grupos=g;LOJA.anuncios=a;
+  $('l-grupos').innerHTML=g.map(x=>`<div class="item" style="grid-template-columns:1fr auto auto">
+      <div style="min-width:0"><div class="n">${esc(x.nome)}</div><div class="m" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.url)}</div></div>
+      <span class="tag ${x.postado_hoje?'shopee':''}" style="${x.postado_hoje?'':'color:var(--dim)'}">${x.postado_hoje?'postado hoje':'livre hoje'}</span>
+      <button class="del" onclick="lojaAcao('loja_apagar_grupo',null,${x.id})">✕</button></div>`).join('')||'<div class="empty">Nenhum grupo ainda</div>';
+  const sel=$('f-anuncio').value;
+  $('f-anuncio').innerHTML=a.map(x=>`<option value="${x.id}">${esc(x.titulo)}</option>`).join('')||'<option value="">Crie um anúncio primeiro</option>';
+  if(sel&&a.some(x=>x.id==sel))$('f-anuncio').value=sel;
+  const marcados=new Set([...document.querySelectorAll('#f-grupos input:checked')].map(i=>+i.value));
+  $('f-grupos').innerHTML=g.map(x=>`<label class="chk ${x.postado_hoje?'off':''}"><input type="checkbox" value="${x.id}" ${x.postado_hoje?'disabled':''} ${marcados.has(x.id)?'checked':''}>
+      <span style="text-transform:none;letter-spacing:0;color:var(--txt)">${esc(x.nome)}</span><span class="m">${x.postado_hoje?'já postou hoje':''}</span></label>`).join('')||'<div class="empty">Cadastre os grupos na aba Grupos</div>';
+  $('l-ads').innerHTML=a.map(x=>`<div class="ad">${x.fotos[0]?`<img src="${x.fotos[0].uri}">`:'<div class="ph"></div>'}
+      <div style="min-width:0"><div class="t">${esc(x.titulo)}</div><div class="d">${esc(x.texto.replace(/\n/g,' · '))}</div><div class="m" style="font-size:11px;color:var(--dim)">${x.fotos.length} foto(s)</div></div>
+      <div style="display:flex;gap:6px"><button class="btn ghost" style="height:30px;padding:0 12px" onclick="editarAnuncio(${x.id})">Editar</button>
+      <button class="del" onclick="if(confirmarApagar())lojaAcao('loja_apagar_anuncio',null,${x.id})">✕</button></div></div>`).join('')||'<div class="empty">Nenhum anúncio salvo</div>';
+  $('l-hist').innerHTML=h.map(x=>`<div class="item" style="grid-template-columns:1fr auto"><div style="min-width:0"><div class="n">${esc(x.grupo)}</div>
+      <div class="m">${esc(x.titulo)} · ${dataH(x.postado_ts)}</div></div><span class="tag ${x.status==='postado'?'mercadolivre':''}" style="${x.status==='postado'?'color:var(--ok);background:rgba(46,229,138,.1)':'color:var(--dim)'}">${x.status}</span></div>`).join('')||'<div class="empty">Nada postado ainda</div>';
+  renderFila(await api('loja_estado'));
+}
+let _apagarOk=0;function confirmarApagar(){if(Date.now()-_apagarOk<3000)return true;_apagarOk=Date.now();toast('Clique no ✕ de novo pra confirmar');return false}
+
+function renderFila(e){
+  LOJA.fila=e.fila;const agora=Math.floor(Date.now()/1000);
+  const n=e.fila.length;$('nav-fila').hidden=!n;$('nav-fila').textContent=n;
+  $('l-hoje').textContent=`${e.postados_hoje} hoje`;
+  const p=e.fila[0];
+  if(!p){$('prox').innerHTML=`<div class="card next"><div><div class="l" style="color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase">Fila vazia</div>
+     <div class="big">Nada pra postar agora</div><div style="color:var(--muted);margin-top:4px">Vá em <b>Anúncios</b>, escolha o anúncio e os grupos e clique em <b>Montar fila</b>.</div></div></div>`;}
+  else{
+    const falta=p.agendado_ts-agora, due=falta<=0;
+    $('prox').innerHTML=`<div class="card next ${due?'due':''}">
+      <div><div style="color:var(--muted);font-size:11px;letter-spacing:.12em;text-transform:uppercase">${due?'Hora de postar':'Próximo grupo'}</div>
+        <div class="big">${esc(p.grupo)}</div><div style="color:var(--muted)">${esc(p.titulo)} · ${p.fotos.length} foto(s)</div>
+        <div class="steps">
+          <button class="btn red" onclick="prepararPost(${p.id},this)">1 · Abrir grupo e copiar texto</button>
+          <button class="btn ghost" style="color:var(--ok);border-color:rgba(46,229,138,.35)" onclick="concluir(${p.id},'postado')">2 · Já postei ✓</button>
+          <button class="btn ghost" onclick="concluir(${p.id},'pulado')">Pular</button>
+        </div></div>
+      <div class="cd">${due?'AGORA':dur(falta)}<small>${due?'pode postar':'até o aviso'}</small></div></div>`;
+    if(due&&!avisados.has(p.id)){avisados.add(p.id);beep();api('chamar_atencao');toast(`Hora de postar em: ${p.grupo}`)}
+  }
+  $('l-fila').innerHTML=e.fila.slice(1).map(x=>`<div class="item" style="grid-template-columns:1fr auto"><div style="min-width:0"><div class="n">${esc(x.grupo)}</div>
+      <div class="m">${esc(x.titulo)}</div></div><b style="font:700 14px var(--display)">${hora(x.agendado_ts)}</b></div>`).join('')||'<div class="empty">—</div>';
+}
+
+async function lojaAcao(m,btn,...a){btn&&btn.classList.add('busy');try{const r=await api(m,...a);if(r&&r.msg)toast(r.msg,!r.ok)}finally{btn&&btn.classList.remove('busy');carregarLoja()}}
+async function addGrupo(btn){const r=await api('loja_salvar_grupo',$('g-nome').value,$('g-url').value);toast(r.msg,!r.ok);if(r.ok){$('g-nome').value='';$('g-url').value=''}carregarLoja()}
+function renderFotos(){$('ad-fotos').innerHTML=adFotos.map((f,i)=>`<div><img src="${f.uri}"><button onclick="adFotos.splice(${i},1);renderFotos()">✕</button></div>`).join('')}
+async function escolherFotos(btn){btn.classList.add('busy');try{const novas=await api('loja_escolher_fotos');adFotos.push(...(novas||[]));renderFotos()}finally{btn.classList.remove('busy')}}
+function novoAnuncio(){adEditando=null;adFotos=[];$('ad-titulo').value='';$('ad-texto').value='';$('ad-tit').textContent='Novo anúncio';renderFotos()}
+function editarAnuncio(id){const a=LOJA.anuncios.find(x=>x.id===id);if(!a)return;adEditando=id;adFotos=[...a.fotos];
+  $('ad-titulo').value=a.titulo;$('ad-texto').value=a.texto;$('ad-tit').textContent='Editando anúncio';renderFotos();$('ad-texto').focus()}
+async function salvarAnuncio(btn){const r=await api('loja_salvar_anuncio',$('ad-titulo').value,$('ad-texto').value,adFotos.map(f=>f.nome),adEditando);
+  toast(r.msg,!r.ok);if(r.ok)novoAnuncio();carregarLoja()}
+function marcarTodos(){const cs=[...document.querySelectorAll('#f-grupos input:not(:disabled)')];const todos=cs.every(c=>c.checked);cs.forEach(c=>c.checked=!todos)}
+async function montarFila(btn){const ids=[...document.querySelectorAll('#f-grupos input:checked')].map(i=>+i.value);
+  if(!$('f-anuncio').value)return toast('Crie um anúncio primeiro',true);if(!ids.length)return toast('Marque pelo menos um grupo',true);
+  const r=await api('loja_montar_fila',$('f-anuncio').value,ids,$('f-int').value);toast(r.msg,!r.ok);
+  document.querySelectorAll('#f-grupos input').forEach(i=>i.checked=false);
+  if(r.ok)document.querySelector('.tabs button[data-s=fila]').click();else carregarLoja()}
+async function prepararPost(id,btn){btn.classList.add('busy');try{const r=await api('loja_preparar',id);toast(r.msg,!r.ok)}finally{btn.classList.remove('busy')}}
+async function concluir(id,st){const r=await api('loja_concluir',id,st);toast(r.msg,!r.ok);carregarLoja()}
+
+async function togglePower(){await api(ESTADO&&ESTADO.rodando?'desligar':'ligar');atualizar()}
+async function acao(m,btn){btn.classList.add('busy');try{const r=await api(m);toast(r.msg,!r.ok)}finally{btn.classList.remove('busy');atualizar()}}
+
+/* ================= render ================= */
+function render(e){
+  ESTADO=e;
+  renderChecklist(e);
+  $('nav-of').hidden=!e.ofertas_fila;$('nav-of').textContent=e.ofertas_fila;
+  const on=e.rodando;
+  $('power').classList.toggle('on',on);
+  $('st-t').className='status-t'+(on?' on':'');
+  $('st-t').innerHTML=`<span class="dot"></span>${on?'Rodando':'Desligado'}`;
+  if(on&&e.proximo_post){const s=Math.max(0,e.proximo_post-e.agora);$('st-s').textContent=`Próximo post em ${Math.floor(s/60)}min ${s%60}s (${hora(e.proximo_post)})`}
+  else $('st-s').textContent=on?'Procurando ofertas…':'Clique no botão pra começar a postar';
+  const cr=e.credenciais,lab={shopee:'Shopee',mercadolivre:'Mercado Livre',aliexpress:'AliExpress',amazon:'Amazon',telegram:'Telegram',ia:'IA'};
+  $('badges').innerHTML=Object.keys(lab).map(k=>`<span class="badge ${cr[k]?'ok':'no'}">${cr[k]?'●':'○'} ${lab[k]}</span>`).join('');
+
+  const g=e.ganhos;
+  $('k-mes').textContent=brl(g.mes);$('k-hoje').textContent=brl(g.hoje);$('k-total').textContent=brl(g.total);
+  $('k-vendas').textContent=`${g.vendas} ${g.vendas==1?'venda':'vendas'}`;
+  $('k-mes-s').textContent=new Date().toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const ph=Object.values(e.posts).reduce((a,p)=>a+p.hoje,0);
+  $('k-posts').textContent=ph;
+  $('k-posts-s').textContent=Object.entries(e.posts).filter(([p,v])=>v.hoje).map(([p,v])=>`${NOME[p]} ${v.hoje}`).join(' · ')||'nenhum ainda';
+  $('nf-posts').textContent=ph;$('nf-ganho').textContent=brl(g.hoje);
+
+  // gráfico 14 dias
+  const dias=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dias.push(d.toLocaleDateString('sv-SE'))}
+  const por={};e.ganhos_dia.forEach(r=>{(por[r.dia]=por[r.dia]||{})[r.plataforma]=r.v});
+  const PL=['shopee','mercadolivre','aliexpress','amazon'];
+  const max=Math.max(1,...dias.map(d=>PL.reduce((a,p)=>a+(por[d]?.[p]||0),0)));
+  $('chart').innerHTML=dias.map(d=>{const vals=PL.map(p=>por[d]?.[p]||0),tot=vals.reduce((a,b)=>a+b,0);
+    return `<div class="bar"><div class="tip">${d.slice(8)}/${d.slice(5,7)} · ${brl(tot)}</div>
+      <div class="stk" style="height:${Math.max(2,tot/max*100)}%">${PL.map((p,k)=>`<i style="flex:${vals[k]};background:${COR[p]}"></i>`).join('')}</div>
+      <span class="d">${d.slice(8)}</span></div>`}).join('');
+
+  const tot=Math.max(g.shopee+g.mercadolivre+(g.aliexpress||0)+(g.amazon||0),0.0001);
+  const meter=(nome,v,c,n)=>`<div class="top"><span>${nome}</span><b>${brl(v)}</b></div><div class="track"><div class="fill" style="width:${v/tot*100}%;background:${c}"></div></div><div class="m" style="font-size:11px;color:var(--dim);margin-top:4px">${n} posts no total</div>`;
+  $('meters').innerHTML=PL.filter(p=>g[p]>0||(e.posts[p]||{}).total||e.credenciais[p]).map(p=>`<div class="meter">${meter(NOME[p],g[p]||0,COR[p],(e.posts[p]||{}).total||0)}</div>`).join('')||'<div class="empty">Configure uma loja na aba Contas</div>';
+
+  const logsHtml=l=>l.length?l.map(r=>`<div class="${r.nivel}"><span class="t">${hora(r.ts)}</span>${esc(r.msg)}</div>`).join(''):'<div class="empty">Nada por aqui ainda</div>';
+  $('mini-log').innerHTML=logsHtml(e.logs.slice(0,8));$('logs').innerHTML=logsHtml(e.logs);
+
+  const postHtml=p=>`<div class="item">${p.imagem?`<img src="${esc(p.imagem)}" onerror="this.outerHTML='<div class=ph></div>'">`:'<div class="ph"></div>'}
+     <div style="min-width:0"><div class="n">${esc(p.nome)}</div><div class="m">${dataH(p.postado_em)} · ${p.desconto>0?Math.round(p.desconto)+'% OFF · ':''}<span class="tag ${p.plataforma}">${NOME[p.plataforma]}</span></div></div>
+     <b style="font:700 15px var(--display)">${brl(p.preco)}</b></div>`;
+  $('ult-posts').innerHTML=e.ultimos_posts.slice(0,5).map(postHtml).join('')||'<div class="empty">O bot ainda não postou nada</div>';
+  $('lista-posts').innerHTML=e.ultimos_posts.map(postHtml).join('')||'<div class="empty">O bot ainda não postou nada</div>';
+
+  $('lista-ganhos').innerHTML=e.ultimos_ganhos.map(r=>`<div class="item" style="grid-template-columns:1fr auto auto">
+     <div style="min-width:0"><div class="n">${esc(r.descricao)}</div><div class="m">${dataH(r.data_ts)} · <span class="tag ${r.plataforma}">${NOME[r.plataforma]}</span> · ${r.origem==='api'?'automático':r.origem==='import'?'importado':'manual'}</div></div>
+     <span class="money">+ ${brl(r.valor)}</span>
+     ${r.origem==='manual'?`<button class="del" title="Apagar" onclick="delGanho('${r.id}')">✕</button>`:'<span></span>'}</div>`).join('')
+     ||'<div class="empty">Nenhum ganho registrado ainda</div>';
+}
+
+async function atualizar(){
+  try{render(await api('estado'))}catch(err){console.error(err)}
+  try{renderFila(await api('loja_estado'))}catch(err){console.error(err)}
+}
+
+async function addGanho(btn){
+  const r=await api('adicionar_ganho',$('g-plat').value,$('g-valor').value,$('g-desc').value,$('g-data').value);
+  toast(r.msg,!r.ok);if(r.ok){$('g-valor').value='';$('g-desc').value='';atualizar()}
+}
+async function delGanho(id){await api('apagar_ganho',id);atualizar()}
+
+async function mlStatus(){const s=await api('ml_status');$('ml-st').innerHTML=s.conectado?'<span class="badge ok">● conectado</span>':'<span class="badge no">○ não conectado</span>'}
+async function lojaMl(m,btn,...a){btn.classList.add('busy');try{const r=await api(m,...a);toast(r.msg,!r.ok);if(r.ok&&m==='ml_conectar')$('ml-link').value=''}finally{btn.classList.remove('busy');mlStatus()}}
+async function carregarCfg(){
+  mlStatus();
+  const c=await api('ler_config');
+  $('sw-shopee').classList.toggle('on',!!c.plataformas.shopee);$('sw-ml').classList.toggle('on',!!c.plataformas.mercadolivre);$('sw-ali').classList.toggle('on',!!c.plataformas.aliexpress);$('sw-amz').classList.toggle('on',!!c.plataformas.amazon);$('c-palavras-g').value=(c.palavras_global||[]).join('\n');$('c-rodape').value=c.rodape||'';$('c-zap').value=c.link_whatsapp||'';$('sw-loja').classList.toggle('on',!!c.mostrar_loja);mostrarLoja(!!c.mostrar_loja);$('c-estilo').value=c.estilo_imagem||'foto';
+  $('sw-auto').classList.toggle('on',!!c.ligar_ao_abrir);$('sw-acordado').classList.toggle('on',c.manter_acordado!==false);$('sw-win').classList.toggle('on',!!(ESTADO&&ESTADO.autostart));
+  $('c-palavras').value=c.palavras.join('\n');$('c-intervalo').value=c.intervalo_min;$('c-max').value=c.max_posts_dia;
+  $('c-hi').value=c.hora_inicio;$('c-hf').value=c.hora_fim;$('c-pmin').value=c.preco_min;$('c-pmax').value=c.preco_max;
+  $('c-nota').value=c.nota_minima;$('c-vendas').value=c.vendas_minimas;
+}
+async function salvarCfg(btn){
+  const num=id=>+$(id).value;
+  const r=await api('salvar_config',{
+    plataformas:{shopee:$('sw-shopee').classList.contains('on'),mercadolivre:$('sw-ml').classList.contains('on'),aliexpress:$('sw-ali').classList.contains('on'),amazon:$('sw-amz').classList.contains('on')},
+    rodape:$('c-rodape').value.trim(),link_whatsapp:$('c-zap').value.trim(),mostrar_loja:$('sw-loja').classList.contains('on'),estilo_imagem:$('c-estilo').value,
+    palavras_global:$('c-palavras-g').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    ligar_ao_abrir:$('sw-auto').classList.contains('on'),manter_acordado:$('sw-acordado').classList.contains('on'),
+    palavras:$('c-palavras').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    intervalo_min:Math.max(5,num('c-intervalo')),max_posts_dia:num('c-max'),hora_inicio:num('c-hi'),hora_fim:num('c-hf'),
+    preco_min:num('c-pmin'),preco_max:num('c-pmax'),nota_minima:num('c-nota'),vendas_minimas:num('c-vendas')});
+  toast(r.msg,!r.ok);mostrarLoja($('sw-loja').classList.contains('on'));
+}
+function mostrarLoja(on){const b=document.querySelector('nav button[data-v=loja]');if(b)b.style.display=on?'':'none'}
+
+$('g-data').value=new Date().toLocaleDateString('sv-SE');
+function iniciar(){api('ler_config').then(c=>mostrarLoja(!!(c&&c.mostrar_loja))).catch(()=>{});atualizar();setInterval(atualizar,3000)}
+if(DEMO){window.__mock=window.__mock||{};iniciar()}
+else window.addEventListener('pywebviewready',iniciar);
+</script>
+</body>
+</html>

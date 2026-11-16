@@ -1,0 +1,10 @@
+.env
+segredos.json
+estado.json
+dados.db
+*.db
+log_bot.txt
+__pycache__/
+.venv/
+*.zip
+fotos_ofertas/
